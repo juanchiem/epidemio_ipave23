@@ -4,8 +4,9 @@ library(tidyverse)
 month <- 1:12
 rate <- 78/12/100 # 78/12
 initial_cap <- 500
-simp_int  = initial_cap + (initial_cap*rate)*month
-comp_int = initial_cap*(1+rate)^(month)
+
+simp_int <- initial_cap + (initial_cap*rate)*month
+comp_int <- initial_cap*(1+rate)^(month)
 
 df <- data.frame(month, simp_int, comp_int) 
 df

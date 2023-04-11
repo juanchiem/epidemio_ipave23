@@ -1,15 +1,12 @@
-# AUC
+# AUDPC
 
 Area bajo la curva de progreso de la enfermedad
-
-Reproducción de: https://apsjournals.apsnet.org/doi/10.1094/PHYTOFR-11-20-0033-A 
 
 ```{r}
 # install.packages("pacman")
 pacman::p_load(tidyverse, epifitter)
 ```
 
-Area under the disease progress curve (AUDPC) - Absoluta
 
 ```{r}
 # https://docs.google.com/spreadsheets/d/16FUAtd-u50sU2si0Ot7j9Ueou7qwlGt5t9NkAdKwlBM/edit#gid=711854399
