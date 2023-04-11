@@ -4,7 +4,7 @@ library(tidyverse)
 month <- 1:12
 rate <- 78/12/100 # 78/12
 initial_cap <- 500
-simp_int  <- initial_cap + (initial_cap*rate)*month
+simp_int  = initial_cap + (initial_cap*rate)*month
 comp_int = initial_cap*(1+rate)^(month)
 
 df <- data.frame(month, simp_int, comp_int) 
@@ -20,6 +20,4 @@ ggplot() +
   scale_color_manual("Interes", 
                      values = c("simple"="red",
                                 "compound"="blue")) + 
-  labs(y="$") + 
-  lims(x=c(1,10))
-usethis::browse_github()
+  labs(y="$") 
