@@ -1,0 +1,296 @@
+---
+title: "ANÁLISIS TEMPORAL DE EPIDEMIAS: Aplicación práctica"
+author: "Juan Pablo Edwards Molina"
+output:
+  beamer_presentation:
+     slide_level: 2
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+pacman::p_load("knitr", "tidyverse", "Epididact")
+options(width=100)
+```
+
+## Regresión lineal
+
+![Regresión linear - residuos](Residuoss.png)
+
+## Ejemplo 1
+
+```{r SLIDE 3, results='asis'}
+dat <- read.table(header=T, text='
+dias sev_1
+0	   0.001
+15	 0.010
+30	 0.074
+45	 0.196
+60	 0.382
+75	 0.676
+90	 0.844
+105	 0.971
+120	 0.999
+')
+knitr::kable(dat)
+attach(dat)
+```
+
+```{r, results='asis', fig.width = 6, fig.height = 6, fig.align = "center"}
+dat %>% 
+  ggplot() + 
+  aes(dias,sev_1)+
+  geom_point()
+```
+
+```{r, results='asis', fig.width = 6, fig.height = 6, fig.align = "center"}
+dat$logito <- log(sev_1/(1-sev_1))
+
+dat %>% 
+  ggplot() + 
+  aes(dias,logito)+
+  geom_point()
+```
+
+```{r SLIDE 4, results='asis'}
+reg <- lm(logito~dias, data = dat)
+coeff = coefficients(reg)
+dat$predicho <- reg$fitted.values
+kable(dat)
+summary(reg)
+```
+
+```{r}
+dat %>% 
+  ggplot() + 
+  aes(Dias,logito)+
+  geom_point(col="blue") + 
+  geom_point(aes(y=predicho), col="red") + 
+  geom_line(aes(y=predicho), col="red")
+```
+
+$r = \frac{(5,67 - (-6,35))}{120}  = 0,1 / dia$ \qquad
+$y_0 = -6,35$
+
+```{r, results='asis'}
+dat$Sev_prevista <- round(plogis(reg$fitted.values), 3)
+kable(dat)
+```
+
+$y_p = \frac {exp (logito\ y)}{1 + exp (logito\  y)}$	
+
+```{r, results='asis', fig.width = 5, fig.height = 5, fig.align = "center"}
+op <- par(mar=c(5,5,2,2)) 
+plot(dat$Sev_prevista~dat$Dias, xlab="Dias", ylab="Severidad prevista", 
+     type="o", col="blue", pch=19,  
+     cex.lab=2, cex.axis=1.5, lwd=3) 
+points(dat$Sev~I(dat$Dias), pch=19, col="red", lwd=3)
+par(op)
+```
+\end{column}
+
+\begin{column}{0.5\textwidth}
+```{r, results='asis', fig.width = 5, fig.height = 5, fig.align = "center"}
+op <- par(mar=c(5,5,2,2)) 
+plot(reg$fitted.values, reg$residuals, ylim=c(-3,3), 
+     pch=19, col="blue",
+     xlab='Severidad predicha', ylab='Residual', cex.lab=2)
+abline(h=0)
+par(op)
+```
+\end{column}
+\end{columns}
+
+## Ejemplo 2
+
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+\centering
+```{r, results='asis'}
+datm <- read.table(header=T, dec=",", text='
+Dias Severidad
+0	0,039
+15	0,437
+30	0,662
+45	0,824
+60	0,913
+75	0,944
+90	0,960
+105	0,971
+120	0,980
+')
+
+print(xtable(datm), comment=F, floating=FALSE, include.rownames=FALSE)
+```
+
+\end{column}
+
+\begin{column}{0.5\textwidth}
+
+```{r, results='asis', fig.width = 6, fig.height = 6, fig.align = "center"}
+op <- par(mar=c(5,5,2,2)) 
+par(mar=c(5,5,2,2))
+plot(datm, type="p", col="blue", pch=19, ylim=c(0,1), 
+     cex.lab=2, cex.axis=1.5, lwd=3)
+par(op)
+```
+\end{column}
+\end{columns}
+
+***
+
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+```{r, results='asis', fig.width = 6, fig.height = 6, fig.align = "center"}
+op <- par(mar=c(5,5,2,2)) 
+plot(datm, type="p", col="blue", pch=19, ylim=c(0,1), 
+     cex.lab=2, cex.axis=1.5, lwd=3)
+par(op)
+```
+\end{column}
+
+\begin{column}{0.5\textwidth}
+
+```{r, results='asis', fig.width = 6, fig.height = 6, fig.align = "center"}
+datm$monito <- log(1/(1-datm$Severidad))
+op <- par(mar=c(5,5,2,2)) 
+plot(datm$monito~datm$Dias, xlab="Dias", ylab="Monito", 
+     type="p", col="blue", pch=19, 
+     cex.lab=2, cex.axis=1.5, lwd=3)
+par(op)
+```
+\end{column}
+\end{columns}
+
+***
+
+
+\bigskip
+\begin{columns}
+
+\begin{column}{0.48\textwidth}
+
+```{r, results='asis'}
+regm <- lm(monito~Dias, datm)
+coeffm = coefficients(regm)
+datm$prev <- regm$fitted.values
+names(datm)[c(2,4)] = c("Sev","Predicho")
+print(xtable(datm, digits=c(0,0,3,2,2)), comment=F, floating=FALSE, include.rownames=FALSE)
+```
+
+\end{column}
+
+\begin{column}{0.48\textwidth}
+
+```{r, results='asis', fig.width = 6, fig.height = 6, fig.align = "center"}
+op <- par(mar=c(5,5,2,2)) 
+r2m = paste0("(R² = ",round(summary(regm)$r.squared[],2),")") 
+eqm = paste0("y = ",round(coeffm[[2]],2)," x + ", round(coeffm[[1]],2) ) 
+
+plot(datm$monito~datm$Dias, type="p", col="blue", pch=19, 
+     xlab="Dias", ylab="Monito", cex.lab=2, cex.axis=1.5, lwd=3)
+points(fitted(regm)~I(datm$Dias), pch=19, col="red", lwd=3)
+text(50, 1, eqm, adj=c(0,0), cex = 2)
+text(50, 0.5, r2m, adj=c(0,0), cex = 2)
+abline(regm, lwd=3)
+
+par(op)
+```
+\end{column}
+
+\end{columns}
+
+\bigskip
+
+\begin{center}
+\hfill
+\begin{beamercolorbox}[sep=0.2em, wd=1\paperwidth]{result}
+
+\centering
+$r=\frac{(4,15 - (-0,17))}{120} = 0,03 / dia$ \qquad
+$y_0 = 0,17$	
+\end{beamercolorbox}
+\hspace*{\fill}
+\end{center}
+
+***
+
+\begin{center}
+
+```{r, results='asis'}
+datm$Sev_prevista <- round((exp(datm$Predicho)-1)/(exp(datm$Predicho)), 3)
+names(datm)[2] = "Sev"
+print(xtable(datm, digits=c(0,0,3,2,2,3)), comment=F, floating=FALSE, include.rownames=FALSE)
+```
+
+\bigskip 
+
+\hfill
+\begin{beamercolorbox}[sep=0.2em, wd=.50\paperwidth, center, rounded=true]{calc}
+\centering
+$y_p = \frac {exp\ (monito\ y) - 1}{exp\ (monito\ y))}$	
+\end{beamercolorbox}
+\hspace*{\fill}
+\end{center}
+
+***
+
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+
+```{r, results='asis', fig.width = 6, fig.height = 6, fig.align = "center"}
+op <- par(mar=c(5,5,2,2)) 
+
+plot(datm$Sev_prevista~datm$Dias, xlab="Dias", ylab="Severidad prevista", 
+     type="o", col="blue", pch=19, ylim=c(0,1), 
+     cex.lab=2, cex.axis=1.5, lwd=3) 
+points(datm$Sev~I(datm$Dias), pch=19, col="red", lwd=3)
+
+par(op)
+```
+
+\end{column}
+
+\begin{column}{0.5\textwidth}
+
+```{r, results='asis', fig.width = 6, fig.height = 6, fig.align = "center"}
+op <- par(mar=c(5,5,2,2)) 
+#r2 = paste0("R² = ",round(summary(regm)$r.squared[],2)) 
+
+plot(regm$fitted.values, regm$residuals, ylim=c(-3,3),
+     pch=19, col="blue",
+     xlab='Severidad ajustada', ylab='Residual', cex.lab=2)
+abline(h=0)
+par(op)
+```
+\end{column}
+\end{columns}
+
+## Efecto de reducción de $y_0$
+
+```{r, results='asis', fig.width = 6, fig.height = 6, fig.align = "center"}
+# plot_2logis(y0_1, y0_2, r_1, r_2, maxt)
+plot2logis(0.003, 0.0001, 0.4, 0.4, 30)
+```
+
+
+## Efecto de reducción de $r$
+
+```{r, results='asis', fig.width = 6, fig.height = 6, fig.align = "center"}
+# plot2logis(y0_1, y0_2, r_1, r_2, maxt)
+plot2logis(0.001, 0.001, 0.4, 0.2, 30)
+```
+
+## Resistencia genética (horizontal)
+
+\begin{center}
+\includegraphics[width=1\textwidth,keepaspectratio]{var_papa.pdf} 
+\end{center}
+\hfill\small {Vanderplank (1963)}
+
+## Aplicación de fungicidas 
+
+\begin{center}
+\includegraphics[width=1\textwidth,keepaspectratio]{sprays.pdf} 
+\end{center}
